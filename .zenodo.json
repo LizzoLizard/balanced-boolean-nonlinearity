@@ -1,0 +1,13 @@
+{
+  "title": "A sharper upper bound on the nonlinearity of balanced Boolean functions in even dimension (paper and Lean 4 proof)",
+  "upload_type": "software",
+  "description": "For every m ≥ 4, every balanced Boolean function on 2m variables has nonlinearity at most 2^(2m−1) − 2^(m−1) − 4. This answers Open Problem 4 of Lou, Xu and Wang (arXiv:2610.17897) and gives new upper bounds 2012, 8124 and 32636 for n = 12, 14 and 16. The cases n = 8 (116) and n = 10 (492) were first proved by Yuan et al. (IACR ePrint 2026/1687), Lou–Xu–Wang, and Xu–Wang (IACR ePrint 2026/2797); they are reproved here independently. Contains the paper and a complete Lean 4 proof (no Mathlib, no sorry, standard axioms only) with a comparator-checked Challenge/Solution pair.",
+  "creators": [
+    { "name": "Shittu, Daniel Ayomide", "affiliation": "Rowan University" }
+  ],
+  "license": "MIT",
+  "keywords": ["Boolean functions", "balanced Boolean functions", "nonlinearity", "Walsh-Hadamard transform", "cryptography", "S-boxes", "Lean 4", "formal verification"],
+  "related_identifiers": [
+    { "identifier": "arXiv:2610.17897", "relation": "isSupplementTo", "scheme": "arxiv" }
+  ]
+}

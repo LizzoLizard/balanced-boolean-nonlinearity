@@ -1,0 +1,408 @@
+\documentclass[11pt]{amsart}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\F}{\mathbb{F}_2}
+\newcommand{\W}{W}
+\newcommand{\nl}{\mathrm{nl}}
+\newcommand{\sg}{\sigma}
+\newcommand{\wt}{\mathrm{wt}}
+\newcommand{\Rad}{\mathrm{Rad}}
+
+\title[Balanced functions in even dimension]{A sharper upper bound on the nonlinearity\\ of balanced Boolean functions in even dimension}
+\author{Daniel Ayomide Shittu}
+\address{Rowan University, Glassboro, NJ, USA}
+\date{November 2026}
+
+\begin{document}
+\begin{abstract}
+Let $f$ be a balanced Boolean function in $n=2m$ variables. The classical bound
+is $\nl(f)\le 2^{n-1}-2^{m-1}-2$. We prove that for every $m\ge 4$,
+\[
+  \nl(f)\;\le\;2^{\,n-1}-2^{\,m-1}-4 .
+\]
+This answers Open Problem~4 of Lou, Xu and Wang in the affirmative. The bound is
+attained for $n=8$ and $n=10$, so it recovers $\nl_{\mathrm{bal}}(8)=116$ and
+$\nl_{\mathrm{bal}}(10)=492$ with a single, computer-free argument. For $n=12,14,16$ it
+gives $2012$, $8124$ and $32636$. The proof uses only the Walsh transform modulo~16,
+Parseval's identity and the spectrum of quadratic forms. Every step has been checked
+in the Lean~4 proof assistant, in two self-contained files without external
+libraries.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+For $f:\F^n\to\F$ write $\sg(b)=(-1)^b$ and
+\[
+  \W_f(a)=\sum_{x\in\F^n}\sg\bigl(f(x)\oplus a\cdot x\bigr),\qquad
+  \nl(f)=2^{n-1}-\tfrac12\max_a|\W_f(a)| .
+\]
+The function $f$ is \emph{balanced} if it takes the value $1$ exactly $2^{n-1}$ times,
+that is, $\W_f(0)=0$. Let $\nl_{\mathrm{bal}}(n)$ be the largest nonlinearity of a balanced
+function in $n$ variables. For even $n=2m$, bent functions reach $2^{n-1}-2^{m-1}$ but are
+never balanced, and the nonlinearity of a balanced function is even. This gives the
+classical bound $\nl_{\mathrm{bal}}(2m)\le 2^{2m-1}-2^{m-1}-2$ \cite{SZZ93,Carlet21}.
+Dobbertin's construction \cite{Dob94} gives
+$\nl_{\mathrm{bal}}(2m)\ge 2^{2m-1}-2^m+\nl_{\mathrm{bal}}(m)$, and he conjectured that this is
+an equality.
+
+In 2026 the cases $n=8$ and $n=10$ were settled: $\nl_{\mathrm{bal}}(8)=116$ by Yuan, Hu, Zhang, Zhang and Wu \cite{YHZZW26}
+(with computer assistance) and by Lou, Xu and Wang \cite{LXW26} (by hand), and
+$\nl_{\mathrm{bal}}(10)=492$ by Xu and Wang \cite{XW26}. Lou, Xu and Wang asked
+\cite[Open Problem~4]{LXW26}: \emph{if $f$ is balanced on $2n$ variables, is
+$\nl(f)\le 2^{2n-1}-2^{n-1}-4$ for every $n\ge 4$?} We answer this question.
+
+\begin{theorem}\label{thm:main}
+Let $m\ge 4$ and let $f$ be a balanced Boolean function in $n=2m$ variables. Then
+\[
+  \nl(f)\le 2^{\,2m-1}-2^{\,m-1}-4 .
+\]
+\end{theorem}
+
+\begin{corollary}\label{cor}
+$\nl_{\mathrm{bal}}(8)=116$, $\nl_{\mathrm{bal}}(10)=492$, $\nl_{\mathrm{bal}}(12)\le 2012$,
+$\nl_{\mathrm{bal}}(14)\le 8124$ and $\nl_{\mathrm{bal}}(16)\le 32636$. The same bounds hold for
+every component of a balanced $(2m,r)$ S-box, and in particular for permutations of
+$\F^{2m}$, $m\ge4$.
+\end{corollary}
+
+The values at $n=8,10$ are attained by Dobbertin's construction. At $n=12,14,16$ that
+construction gives $2010$, $8120$ and $32628$, so the remaining gaps are $2$, $4$ and $8$.
+The hypothesis $m\ge 4$ is needed: $\nl_{\mathrm{bal}}(6)=26$ exceeds the value $24$ given by the formula
+(the proof uses $16\mid 2^m$, see Step~3).
+
+\medskip\noindent\textbf{Relation to earlier work.}
+The new content is the general statement for all $m\ge 4$. For $n=8$ and $n=10$ the
+results are due to \cite{YHZZW26,LXW26,XW26}; we give independent proofs of them, inside
+the same argument. Our starting point, a congruence for $\W_f$ modulo~16 that produces a
+quadratic form, is also the starting point of \cite{LXW26}. As far as we can tell from the
+abstracts of \cite{XW26,YHZZW26} and the text of \cite{LXW26}, none of them states a bound
+for general even $n$ for single Boolean functions.
+
+\medskip\noindent\textbf{Formal proof.}
+Theorem~\ref{thm:main} is proved in Lean~4 (Section~\ref{sec:lean}). The files use no
+library beyond Lean's core, contain no \texttt{sorry} and no added axioms, and depend
+only on Lean's three standard axioms.
+
+\medskip\noindent\textbf{Plan.} Section~\ref{sec:prelim} collects three standard facts.
+Section~\ref{sec:main} proves the theorem for $n\ge 12$ and reduces $n=8,10$ to a short list
+of parameters. Sections~\ref{sec:ten} and~\ref{sec:eight} finish $n=10$ and $n=8$.
+
+\section{Preliminaries}\label{sec:prelim}
+
+For $g:\F^N\to\mathbb{Z}$ put $\W_g(a)=\sum_x g(x)\sg(a\cdot x)$, so
+$\W_f=\W_{\sg\circ f}$. We use Parseval, $\sum_a \W_g(a)^2=2^N\sum_x g(x)^2$, the
+adjoint identity $\sum_a \W_g(a)h(a)=\sum_x g(x)\W_h(x)$, and inversion
+$\W_{\W_g}=2^N g$.
+
+\begin{lemma}[Walsh values modulo 16]\label{lem:mod16}
+Let $f$ be balanced on $n\ge 4$ variables, $v=\bigoplus_{f(x)=1}x$, and
+$N(a)=\#\{x: f(x)=1,\ a\cdot x=1\}$. Then $\W_f(a)=4N(a)-2^n$ for $a\neq 0$, and
+\[
+  \W_f(a)\equiv 4\,[a\cdot v]+8\,Q(a)\pmod{16},\qquad Q(a)=\tbinom{N(a)}{2}\bmod 2 .
+\]
+The function $Q$ is quadratic and $Q(0)=0$. In particular $4\mid \W_f$ everywhere.
+\end{lemma}
+
+\begin{proof}
+Counting the four classes of $x$ according to $f(x)$ and $a\cdot x$ gives
+$\W_f(a)=4N(a)-2^n$. Modulo $16$ this is $4(N\bmod 4)$, and $N\bmod 2=a\cdot v$ while
+$\binom N2\bmod 2=1$ exactly when $N\equiv 2,3\pmod 4$. Finally
+$\binom{N(a)}2=\sum_{\{x,y\}}(a\cdot x)(a\cdot y)$, summed over pairs in the support of
+$f$, is a polynomial of degree at most $2$ in $a$.
+\end{proof}
+
+For a quadratic $q:\F^N\to\F$, its radical is
+$\Rad(q)=\{u: q(a\oplus u)\oplus q(a)\text{ is constant in }a\}$.
+
+\begin{lemma}[quadratic spectra]\label{lem:quad}
+Let $q$ be quadratic on $N=2k+1$ variables. There is $r\le k$ with $|\Rad(q)|=2^{N-2r}$,
+$\W_q(x)\in\{0,\pm 2^{N-r}\}$ for all $x$, and $\sum_x|\W_q(x)|=2^{N+r}$.
+\end{lemma}
+
+This is the standard description of quadratic forms \cite[Ch.~5]{Carlet21}.
+
+\section{The general argument}\label{sec:main}
+
+Fix $k\ge 3$ and put $n=2k+2$, $B=2^k$. So $2^n=4B^2$, $2^{m}=2B$ and $16\mid 2B$.
+By Lemma~\ref{lem:mod16}, $\nl(f)\ge 2^{n-1}-2^{m-1}-3$ is equivalent, for balanced $f$, to
+$|\W_f|\le 2B+4$ everywhere. Theorem~\ref{thm:main} therefore follows from:
+
+\begin{theorem}\label{thm:walsh}
+For $k\ge 3$ there is no balanced $f$ on $2k+2$ variables with $|\W_f(a)|\le 2B+4$ for all $a$.
+\end{theorem}
+
+Assume such an $f$ exists. We derive a contradiction in nine steps. Throughout, $v$ and $Q$
+are as in Lemma~\ref{lem:mod16}.
+
+\smallskip\noindent\textbf{Step 1 ($v\neq0$).}
+If $v=0$, then $8\mid \W_f$, so $|\W_f|\le 2B$ (because $8\mid 2B$). Since $\W_f(0)=0$,
+Parseval gives $2^{2n}=\sum\W_f^2\le(2^n-1)4B^2<2^{2n}$, a contradiction. After a linear change of
+variables (which preserves balance and permutes the spectrum) we may assume $a\cdot v=a_0$.
+Write $a=(a_0,a')$ with $a'\in\F^{2k+1}$, $H_0=\{a_0=0\}$, $H_1=\{a_0=1\}$, and
+$Q_c(a')=Q(c,a')$.
+
+\smallskip\noindent\textbf{Step 2 (the two halves).}
+Define $S,D:\F^{2k+1}\to\{-1,0,1\}$ by $S(x')=\sg(f(0,x'))$ if $f(0,x')=f(1,x')$ and $0$
+otherwise, and $D(x')=\sg(f(0,x'))$ if $f(0,x')\ne f(1,x')$ and $0$ otherwise. Then
+\[
+  \W_f(0,a')=2\W_S(a'),\qquad \W_f(1,a')=2\W_D(a').
+\]
+The supports of $S$ and $D$ partition $\F^{2k+1}$. Write $|\mathrm{supp}\,D|=B^2+2t$; here $t$ is
+an integer, since $\W_D(0)=\tfrac12\W_f(1,0)\equiv 2\pmod 4$ makes $|\mathrm{supp}\,D|$ even.
+Parseval on each half gives
+\[
+  \sum_{a'}\W_f(0,a')^2=8B^4-16B^2t,\qquad \sum_{a'}\W_f(1,a')^2=8B^4+16B^2t .
+\]
+
+\smallskip\noindent\textbf{Step 3 (the $H_0$ bound).}
+On $H_0$ we have $\W_f\equiv 8Q_0\pmod{16}$. Since $16\mid 2B$, this gives $|\W_f|\le 2B$ where
+$Q_0=0$ and $|\W_f|\le 2B-8$ where $Q_0=1$; also $\W_f(0)=0$. Comparing with Step~2,
+\begin{equation}\label{eq:H0}
+  8(B-2)\,\wt(Q_0)\;\le\;B^2(4t-1).
+\end{equation}
+In particular $t\ge1$.
+
+\smallskip\noindent\textbf{Step 4 (the $H_1$ bound).}
+On $H_1$ put $s(a')=\W_f(1,a')\,\sg(Q_1(a'))$. By Lemma~\ref{lem:mod16}, $s\equiv 4\pmod{16}$,
+and $|s|\le 2B+4$, so $-(2B-4)\le s\le 2B+4$. Hence $(2B+4-s)(2B-4+s)\ge0$, that is,
+$s^2\le 4B^2-16+8s$. Summing over $a'$ and using Step~2,
+\begin{equation}\label{eq:L}
+  L:=\sum_{a'}s(a')\;\ge\;2B^2(t+2),
+\end{equation}
+with equality only if $s(a')\in\{2B+4,\,-(2B-4)\}$ for every $a'$. By the adjoint identity,
+$L=2\sum_{x'}D(x')\,\W_{Q_1}(x')$.
+
+\smallskip\noindent\textbf{Step 5 (the rank is maximal).}
+Since $Q$ is quadratic, $Q_0\oplus Q_1$ is affine; so $Q_0,Q_1$ are quadratic with the same
+radical. Apply Lemma~\ref{lem:quad} to $Q_1$ ($N=2k+1$) with rank $r$. Since $|D|\le1$,
+$L\le 2\sum|\W_{Q_1}|=4B^2\cdot 2^r$, and \eqref{eq:L} gives $2^{r+1}\ge t+2$. If $r=0$
+this contradicts $t\ge1$. If $r\ge1$, then $|\W_{Q_0}(0)|\le 2^{2k+1-r}\le B^2$, so
+$\wt(Q_0)\ge B^2/2$; then \eqref{eq:H0} gives $t\ge B-1$ and so $2^{r+1}\ge B+1$, i.e.\ $r=k$.
+Thus $|\Rad(Q_1)|=|\Rad(Q_0)|=2$. A linear change of the coordinates $a'$ (which keeps
+$a\cdot v=a_0$) makes $\Rad=\{0,e\}$ with $e$ the first unit vector of $\F^{2k+1}$. We write
+$a'=(a_1,a'')$ with $a''\in\F^{2k}$.
+
+\smallskip\noindent\textbf{Step 6 (a lower bound on $t$).}
+By Lemma~\ref{lem:quad} with $r=k$, $\W_{Q_0}(0)\in\{0,\pm2B\}$, so $\wt(Q_0)\in\{B^2,B^2\pm B\}$.
+Putting $\wt(Q_0)\ge B^2-B$ into \eqref{eq:H0} gives
+\begin{equation}\label{eq:tlow}
+  t\ge 2B-5 .
+\end{equation}
+
+\smallskip\noindent\textbf{Step 7 (a bent function inside $Q_1$).}
+Since $e\in\Rad(Q_1)$, $Q_1(a\oplus e)=Q_1(a)\oplus\varepsilon$ for a constant $\varepsilon$.
+Pairing $a$ with $a\oplus e$ shows that $\W_{Q_1}(x_1,x'')=0$ unless $x_1=\varepsilon$, and
+Lemma~\ref{lem:quad} with Parseval then forces $|\W_{Q_1}(\varepsilon,x'')|=2B$ for all
+$x''$. So $\W_{Q_1}(\varepsilon,x'')=2B\,\sg(b(x''))$ for a function $b$ on $2k$ variables;
+$q(a'')=Q_1(0,a'')$ is bent with dual $b$. Put $\tau(a'')=\sg(q(a''))$; then
+$\W_{\sg\circ b}=B\tau$ and $\W_\tau=B\,\sg\circ b$.
+
+\smallskip\noindent\textbf{Step 8 (counting the defects).}
+Let $D^*(x'')=D(\varepsilon,x'')$ and $\bar D(x'')=D(1\oplus\varepsilon,x'')$, and write
+$D^*=\sg\circ b+E^*$. Let
+\[
+  m_1=\#\{D^*=0\},\qquad m_2=\#\{D^*=-\sg\circ b\},\qquad \delta=m_1+2m_2 .
+\]
+Then $\sum D^*\,\sg(b)=B^2-\delta$, so by Step~7, $L=4B(B^2-\delta)$, and \eqref{eq:L} becomes
+\begin{equation}\label{eq:delta}
+  2\delta\le 2B^2-2B-Bt .
+\end{equation}
+
+\smallskip\noindent\textbf{Step 9 (a pointwise inequality and the main estimate).}
+Put $u=\tau\,\W_{E^*}$ and $z=\tau\,\W_{\bar D}$ (functions of $a''$). Splitting $\W_D$ by
+the first coordinate and using $\W_{D^*}=B\tau+\W_{E^*}$,
+\[
+  \tau\,\W_f(1,0,a'')=2(B+u+z),\qquad \sg(\varepsilon)\,\tau\,\W_f(1,1,a'')=2(B+u-z).
+\]
+Since $|\W_f|\le 2B+4$, $|B+u\pm z|\le B+2$; hence $|z|\le 2-u$ and $z^2\le(2-u)^2$. Now sum
+over $a''$. Parseval and Step~7 give
+\[
+  \textstyle\sum z^2=B^2(2t+m_1),\quad \sum u=\sum_{x''}E^*\,\W_\tau=-B\delta,\quad
+  \sum u^2=B^2(m_1+4m_2),
+\]
+using $|\mathrm{supp}\,\bar D|=(B^2+2t)-(B^2-m_1)$ and $E^*\sg(b)\in\{0,-1,-2\}$. Hence
+\begin{equation}\label{eq:star}
+  2Bt\le 4B+4\delta+4Bm_2 .\tag{$\star$}
+\end{equation}
+With $2m_2\le\delta$ and \eqref{eq:delta}, this gives $(B+4)\,t\le 2B^2+2B$. Together with
+\eqref{eq:tlow}, $2B^2+3B-20\le 2B^2+2B$, so $B\le 20$.
+
+\smallskip
+This proves Theorem~\ref{thm:walsh} for $k\ge5$, i.e.\ $n\ge 12$. For $B=16$ we get
+$t=27$. For $B=8$ we get $t\in\{11,12\}$. These two cases are finished below.
+
+\section{The case $n=10$}\label{sec:ten}
+
+Here $B=16$, $t=27$, and \eqref{eq:delta} reads $\delta\le 24$.
+
+\emph{(a) $Q_0$ is invariant under $e$.} By \eqref{eq:H0}, $112\,\wt(Q_0)\le 256\cdot107$, so
+$\wt(Q_0)=240$ and $\W_{Q_0}(0)=2B\ne0$. Since $e\in\Rad(Q_0)$, $Q_0(a\oplus e)=Q_0(a)\oplus\varepsilon_0$,
+and $\varepsilon_0=1$ would make $Q_0$ balanced. So $Q_0(1,a'')=Q_0(0,a'')$.
+
+\emph{(b) $m_1=0$.} Let $S^*=S(\varepsilon,\cdot)$, so $|\mathrm{supp}\,S^*|=m_1$. On $H_0$,
+$\W_f(0,c,a'')=2(\W_{S(0,\cdot)}\pm\W_{S(1,\cdot)})(a'')\equiv 8Q_0(c,a'')\pmod{16}$, and by (a) the
+right side does not depend on $c$. Adding and subtracting gives $4\mid\W_{S^*}$. Next,
+\eqref{eq:star} gives $4\delta+64m_2\ge 800$, so $m_2\ge 11$ and $m_1=\delta-2m_2\le2$. Then
+$|\W_{S^*}|\le m_1\le2$ and $4\mid\W_{S^*}$ force $\W_{S^*}=0$, and Parseval gives $m_1=0$.
+Now $m_2=11$ would need $\delta=24=22+m_1$, so $m_2=12$ and $\delta=24$.
+
+\emph{(c) Contradiction.} With $\delta=24$, \eqref{eq:delta} and hence \eqref{eq:L} are
+equalities. So $s\in\{36,-28\}$ on all of $H_1$, i.e.\ $16+u\pm z\in\{18,-14\}$ for both signs.
+Adding the two gives $u\in\{2,-14,-30\}$, so $u\equiv2\pmod4$. But $m_1=0$ means $E^*$ equals
+$-2\sg(b)$ on $12$ points and $0$ elsewhere, so $\W_{E^*}$ is twice a sum of $12$ signs, and
+$4\mid u$. \qed
+
+\section{The case $n=8$}\label{sec:eight}
+
+Here $B=8$, $t\in\{11,12\}$ and, by \eqref{eq:delta}, $\delta\le12$.
+
+\emph{(a) $m_1\le2\Rightarrow m_1=0$.} By \eqref{eq:H0}, $48\,\wt(Q_0)\le 64\cdot47$, so
+$\wt(Q_0)=56$. The argument of Section~\ref{sec:ten}(a),(b) then gives $4\mid\W_{S^*}$, and
+hence $m_1=0$ whenever $m_1\le2$.
+
+\emph{(b) The five local patterns.} On $H_1$, $s\equiv4\pmod{16}$ and $|s|\le20$, so
+$s\in\{-12,4,20\}$, i.e.\ $u\pm z\in\{-14,-6,2\}$. Since $|u|\le\sum|E^*|=\delta\le12$,
+\[
+  (u,|z|)\in\{(-10,4),\,(-6,0),\,(-6,8),\,(-2,4),\,(2,0)\}.
+\]
+In particular $u\equiv2\pmod 4$ everywhere. If $m_1=0$ then
+$\W_{E^*}\equiv 2m_2\pmod4$, so $m_2$ is odd.
+
+\emph{(c) A second averaged inequality.} Each of the five pairs satisfies
+$3z^2+5u^2+44u\le108$, with equality exactly at $(-10,4),(-6,8),(2,0)$. Summing with the
+identities of Step~9 gives
+\begin{equation}\label{eq:farkas}
+  12t+5m_1+18m_2\le 216 .
+\end{equation}
+
+\emph{(d) The parameters are forced.} If $t=12$, then $\delta\le8$ and \eqref{eq:star} gives
+$m_2\ge4$, so $(m_1,m_2)=(0,4)$, contradicting (b). So $t=11$. Then \eqref{eq:star} reads
+$4m_1+40m_2\ge144$ and \eqref{eq:farkas} reads $5m_1+18m_2\le84$. This gives $m_2\le4$. Also
+$m_2\le2$ would need $m_1\ge16>\delta$, and $m_2=4$ gives $m_1\le2$, hence $m_1=0$ and $m_2$
+even, contradicting (b). So $m_2=3$, $m_1\ge6$, and with $\delta\le12$ we get
+$(t,m_1,m_2)=(11,6,3)$. Both \eqref{eq:star} and \eqref{eq:farkas} are then equalities.
+
+\emph{(e) Two values of $u$.} Equality in \eqref{eq:star} means $z^2=(2-u)^2$ at every $a''$,
+and equality in \eqref{eq:farkas} means every pair lies in $\{(-10,4),(-6,8),(2,0)\}$.
+Together, $u\in\{-6,2\}$ everywhere.
+
+\emph{(f) A Boolean function with three large coefficients.} Since
+$\W_{E^*}+2\tau=\tau(u+2)\in\{\pm4\}$, there is $g:\F^6\to\F$ with
+$4\sg(g)=\W_{E^*}+2\tau$. By inversion,
+\[
+  \W_g=16E^*+4\,\sg\circ b ,
+\]
+so $|\W_g|=28$ at the $m_2=3$ points where $D^*=-\sg\circ b$, and $|\W_g|\le12$ elsewhere.
+
+\emph{(g) Contradiction.} Let $x_1,x_2,x_3$ be those three points and $x_4=x_1\oplus x_2\oplus x_3$,
+which is a fourth point, so $|\W_g(x_4)|\le12$. They form a coset $x_1+V$ of a
+$2$-dimensional space $V$. For every character $\chi$ of $V$,
+\[
+  \Bigl|\sum_{y\in V}\chi(y)\W_g(x_1\oplus y)\Bigr|=|V|\,\Bigl|\sum_{x\in c+V^\perp}\sg(g(x))\sg(x_1\cdot x)\Bigr|\le 4\cdot16=64 ,
+\]
+where $c$ is the vector that defines $\chi$. Choosing $\chi$ so that the terms at $x_2,x_3$ have the
+same sign as the term at $x_1$ gives a sum of absolute value at least $3\cdot28-12=72>64$. \qed
+
+\section{The Lean formalization}\label{sec:lean}
+
+The release contains two files for Lean~4.15.0 \cite{Lean4}. Neither imports anything, not even
+Mathlib.
+\begin{itemize}[leftmargin=1.5em]
+\item \texttt{EvenBalanced8Bound.lean} (4{,}589 lines) proves Theorem~\ref{thm:main} for all
+$m\ge4$ and Corollary~\ref{cor}.
+\item \texttt{EvenBalancedBound.lean} (3{,}413 lines) is an earlier, smaller file for $m\ge5$.
+Its content is contained in the first file. It is included because it checks faster and does
+not use the $n=8$ argument.
+\end{itemize}
+
+\noindent\textbf{Definitions.} The statements use only elementary definitions, which a reader
+can check against the usual ones:
+\begin{verbatim}
+abbrev Vec (n : Nat) := Fin n → Bool
+def isBalanced (n : Nat) (F : Vec n → Bool) : Prop :=
+  2 * hammingWeight F = (2 : Int) ^ n
+def hasNonlinearityAtLeast (n : Nat) (F : Vec n → Bool) (d : Int) : Prop :=
+  forall (a : Vec n) (c : Bool), d <= hammingDist F (affine a c)
+\end{verbatim}
+Here \texttt{affine a c x} is $(a\cdot x)\oplus c$, and \texttt{hammingWeight} and
+\texttt{hammingDist} count over all of $\F^n$.
+
+\noindent\textbf{Main statement.}
+\begin{verbatim}
+theorem even_balanced_nl_le_from8 (m : Nat) (hm : 4 <= m)
+    (F : Vec (2 * m) → Bool) (hbal : isBalanced (2 * m) F) :
+    ¬ hasNonlinearityAtLeast (2 * m) F
+        ((2 : Int) ^ (2 * m - 1) - (2 : Int) ^ (m - 1) - 3)
+\end{verbatim}
+That is, no balanced $F$ has nonlinearity $\ge 2^{2m-1}-2^{m-1}-3$, which is
+Theorem~\ref{thm:main}. Specializations include \texttt{balanced\_8\_nl\_le\_116},
+\texttt{balanced\_10\_nl\_le\_492}, and S-box and permutation versions. The first file also
+re-proves the known divisibility theorem of Sarkar and Maitra \cite{SM00} for resilient
+functions. We do not claim that result as new.
+
+\noindent\textbf{Availability.} The paper, the Lean files and the checking scripts are archived at
+\url{https://doi.org/10.5281/zenodo.24546078}.
+
+\noindent\textbf{Checking.} The release also contains a short file \texttt{ChallengeDefs.lean}
+with the definitions above and a file \texttt{Challenge.lean} with the eight main statements, so a
+reader only has to check these two short files. \texttt{verify.sh} checks the SHA-256 sums of all
+Lean files and confirms that no \texttt{sorry}, \texttt{axiom} declaration or \texttt{native\_decide}
+occurs in the code; the two proof files import nothing. It compiles everything, checks that
+\texttt{Solution.lean} proves exactly the statements of \texttt{Challenge.lean} over identical
+definitions, and prints the axioms of the main
+theorems; the only ones are \texttt{propext}, \texttt{Classical.choice} and
+\texttt{Quot.sound}. On an Apple-silicon laptop the two files compile in about $35$\,s
+and $80$\,s, using at most about $1.2$ and $1.8$\,GB of memory. The proof follows
+Sections~\ref{sec:main}--\ref{sec:eight} step by step. Its main lemma is the private theorem
+\texttt{even\_balanced\_exclusion\_aux}.
+
+\section{Remarks and questions}
+
+\begin{enumerate}[leftmargin=1.5em]
+\item For $n\ge12$ the final inequality of Section~\ref{sec:main} has slack. For instance,
+$B=32$ gives $59\le t\le 58$. This suggests that $|\W_f|\le 2B+8$ might also be excluded for large
+$m$, which would give $\nl\le 2^{2m-1}-2^{m-1}-6$. We have not proved this.
+\item Is $\nl_{\mathrm{bal}}(12)=2010$, as Dobbertin's conjecture predicts? This would follow by
+excluding $2012$, i.e.\ excluding $|\W_f|\le 72$ for balanced $f$ on $12$ variables.
+\end{enumerate}
+
+\section*{Acknowledgements}
+The mathematical argument was developed by the author and the AI system Gemini Neon (Google)
+working together interactively: the author contributed ideas, chose the directions to pursue and
+took part in the reasoning at each step. Gemini Neon wrote the Lean code. Claude (Anthropic)
+assisted with drafting this manuscript and preparing the release. Every proof was checked by the
+Lean kernel, and the author takes full responsibility for the content of this paper.
+
+\begin{thebibliography}{9}
+\bibitem{Carlet21} C.~Carlet, \emph{Boolean Functions for Cryptography and Coding Theory},
+Cambridge University Press, 2021.
+\bibitem{Dob94} H.~Dobbertin, Construction of bent functions and balanced Boolean functions
+with high nonlinearity, in: \emph{Fast Software Encryption (FSE 1994)}, LNCS 1008, Springer, 1995,
+pp.~61--74.
+\bibitem{LXW26} Y.~Lou, Y.~Xu and Q.~Wang, The maximum nonlinearity of 8-variable balanced
+Boolean functions is 116, arXiv:2610.17897, 2026.
+\bibitem{Lean4} L.~de~Moura and S.~Ullrich, The Lean~4 theorem prover and programming language,
+in: \emph{CADE-28}, LNCS 12699, Springer, 2021, pp.~625--635.
+\bibitem{SM00} P.~Sarkar and S.~Maitra, Nonlinearity bounds and constructions of resilient
+Boolean functions, in: \emph{CRYPTO 2000}, LNCS 1880, Springer, 2000, pp.~515--532.
+\bibitem{SZZ93} J.~Seberry, X.-M.~Zhang and Y.~Zheng, Nonlinearly balanced Boolean functions and
+their propagation characteristics, in: \emph{CRYPTO '93}, LNCS 773, Springer, 1994, pp.~49--60.
+\bibitem{XW26} Y.~Xu and Q.~Wang, The maximum possible nonlinearity for a balanced Boolean
+function in 10 variables is 492, IACR Cryptology ePrint Archive, Report 2026/2797, 2026.
+\bibitem{YHZZW26} Y.~Yuan, Y.~Hu, Y.~Zhang, L.~Zhang and W.~Wu, Theoretical open problems in
+symmetric cryptography: verifiable LLM-guided analysis, IACR Cryptology ePrint Archive,
+Report 2026/1687, 2026.
+\end{thebibliography}
+
+\end{document}

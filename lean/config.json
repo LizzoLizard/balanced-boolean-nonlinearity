@@ -1,0 +1,15 @@
+{
+    "challenge_module": "Challenge",
+    "solution_module": "Solution",
+    "theorem_names": [
+        "EvenBalancedChallenge.even_balanced_nl_le",
+        "EvenBalancedChallenge.balanced_8_nl_le_116",
+        "EvenBalancedChallenge.balanced_10_nl_le_492",
+        "EvenBalancedChallenge.balanced_12_nl_le_2012",
+        "EvenBalancedChallenge.balanced_14_nl_le_8124",
+        "EvenBalancedChallenge.balanced_16_nl_le_32636",
+        "EvenBalancedChallenge.sbox_even_nl_le",
+        "EvenBalancedChallenge.permutation_even_nl_le"
+    ],
+    "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"]
+}

@@ -1,0 +1,22 @@
+name = "even_balanced_nl"
+version = "0.1.0"
+srcDir = "lean"
+defaultTargets = ["ChallengeDefs", "Challenge", "Solution", "EvenBalanced8Bound", "EvenBalancedBound"]
+description = "Lean 4 proof that balanced Boolean functions on 2m variables (m ≥ 4) have nonlinearity at most 2^(2m-1) - 2^(m-1) - 4."
+keywords = ["math", "boolean-functions", "cryptography", "coding-theory", "formal-verification"]
+license = "MIT"
+
+[[lean_lib]]
+name = "ChallengeDefs"
+
+[[lean_lib]]
+name = "Challenge"
+
+[[lean_lib]]
+name = "Solution"
+
+[[lean_lib]]
+name = "EvenBalanced8Bound"
+
+[[lean_lib]]
+name = "EvenBalancedBound"

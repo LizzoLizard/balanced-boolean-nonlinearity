@@ -1,0 +1,9 @@
+.lake/
+build/
+*.olean
+*.ilean
+*.aux
+*.log
+*.out
+*.synctex.gz
+.DS_Store

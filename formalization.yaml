@@ -1,0 +1,146 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+version: "v0.4"
+
+project:
+  name: "balanced-boolean-nonlinearity"
+  description: >-
+    Lean 4 proof that every balanced Boolean function on 2m variables, m >= 4, has nonlinearity
+    at most 2^(2m-1) - 2^(m-1) - 4. This answers Open Problem 4 of Lou, Xu and Wang. It gives
+    nl <= 116 for n = 8, nl <= 492 for n = 10, and new upper bounds 2012, 8124 and 32636 for
+    n = 12, 14 and 16, with the same bounds for balanced S-boxes and permutations.
+  authors: ["Daniel Ayomide Shittu"]
+  responsible_maintainers: ["Daniel Ayomide Shittu"]
+  license: "MIT"
+
+sources:
+  - title: "A sharper upper bound on the nonlinearity of balanced Boolean functions in even dimension"
+    authors: ["Daniel Ayomide Shittu"]
+    id: "https://doi.org/10.5281/zenodo.24546078"
+    type: "original-proof"
+    location: "paper/main.tex"
+    relationship: "formalizes"
+    note: "New result, first presented in this repository. The Lean proof follows the paper step by step."
+    author_endorsement: "participated"
+  - title: "The Maximum Nonlinearity of 8-variable Balanced Boolean Functions is 116"
+    authors: ["Y. Lou", "Y. Xu", "Q. Wang"]
+    id: "arXiv:2610.17897"
+    type: "article"
+    location: "Open Problem 4"
+    relationship: "background"
+    note: "Poses Open Problem 4, answered here. Also the first proofs of nl_bal(8) = 116 (with Yuan et al.); our n = 8 case is an independent proof."
+    author_endorsement: "not-contacted"
+  - title: "Theoretical open problems in symmetric cryptography: verifiable LLM-guided analysis"
+    authors: ["Y. Yuan", "Y. Hu", "Y. Zhang", "L. Zhang", "W. Wu"]
+    id: "IACR ePrint 2026/1687"
+    type: "article"
+    relationship: "independently-proves"
+    note: "First proof of nl_bal(8) = 116 (with Lou-Xu-Wang). Our n = 8 case is proved independently; nothing from this paper is used."
+    author_endorsement: "not-contacted"
+  - title: "The maximum possible nonlinearity for a balanced Boolean function in 10 variables is 492"
+    authors: ["Y. Xu", "Q. Wang"]
+    id: "IACR ePrint 2026/2797"
+    type: "article"
+    relationship: "independently-proves"
+    note: "First proof of nl_bal(10) = 492. Our n = 10 case is proved independently; nothing from this paper is used."
+    author_endorsement: "not-contacted"
+
+classification:
+  arxiv: ["cs.IT", "math.CO", "cs.CR"]
+  msc2020: ["94D10", "94A60", "06E30"]
+
+status:
+  scope: >-
+    The full upper bound is proved in Lean with no hypotheses, for every m >= 4. Not formalized:
+    the matching lower bounds (Dobbertin's construction reaching 116 and 492), so the exact values
+    nl_bal(8) = 116 and nl_bal(10) = 492 rely on that classical construction outside Lean.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: ["propext", "Quot.sound", "Classical.choice"]
+  main_results:
+    - declaration: "EvenBalancedChallenge.even_balanced_nl_le"
+      file: "lean/Solution.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+      comparator_config: "lean/config.json"
+    - declaration: "EvenBalancedChallenge.balanced_8_nl_le_116"
+      file: "lean/Solution.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+      comparator_config: "lean/config.json"
+    - declaration: "EvenBalancedChallenge.balanced_10_nl_le_492"
+      file: "lean/Solution.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+      comparator_config: "lean/config.json"
+    - declaration: "EvenBalancedChallenge.sbox_even_nl_le"
+      file: "lean/Solution.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+      comparator_config: "lean/config.json"
+    - declaration: "EvenBalancedChallenge.permutation_even_nl_le"
+      file: "lean/Solution.lean"
+      sorry_count: 0
+      axioms: ["propext", "Quot.sound", "Classical.choice"]
+      comparator_config: "lean/config.json"
+
+automation:
+  methods:
+    - method: "agent"
+      models: ["Gemini Neon (Google)", "Claude Opus 5.5 (Anthropic)"]
+      framework: "Antigravity, Claude Code"
+      tool_setup: "Interactive sessions directed by the author; Lean 4.15.0 with no Mathlib."
+  notes: >-
+    The mathematical argument was developed by the author and Gemini Neon working together
+    interactively: the author contributed ideas, chose the directions to pursue and took part in
+    the reasoning at each step. Gemini Neon wrote the Lean code. Claude helped prepare the release
+    (paper draft, comment cleanup in the Lean files, Challenge/Solution bridge, checking scripts).
+
+fidelity:
+  divergences: >-
+    None for the upper bound. Definitions are elementary (Fin n -> Bool vectors, Hamming distance to
+    affine functions) rather than Mathlib's, and are stated in lean/ChallengeDefs.lean.
+
+review:
+  status: "self-assessed"
+  reviewers: []
+  notes: "No independent peer review recorded here."
+
+alignment:
+  namespace: "EvenBalancedChallenge"
+  statements:
+    - source: "Theorem 1 (main theorem), all m >= 4"
+      lean: "even_balanced_nl_le"
+      module: "Solution"
+      status: "proved"
+    - source: "Corollary: nl_bal(8) <= 116"
+      lean: "balanced_8_nl_le_116"
+      module: "Solution"
+      status: "proved"
+    - source: "Corollary: nl_bal(10) <= 492"
+      lean: "balanced_10_nl_le_492"
+      module: "Solution"
+      status: "proved"
+    - source: "Corollary: nl_bal(12) <= 2012"
+      lean: "balanced_12_nl_le_2012"
+      module: "Solution"
+      status: "proved"
+    - source: "Corollary: nl_bal(14) <= 8124"
+      lean: "balanced_14_nl_le_8124"
+      module: "Solution"
+      status: "proved"
+    - source: "Corollary: nl_bal(16) <= 32636"
+      lean: "balanced_16_nl_le_32636"
+      module: "Solution"
+      status: "proved"
+    - source: "Corollary: balanced (2m, r) S-boxes"
+      lean: "sbox_even_nl_le"
+      module: "Solution"
+      status: "proved"
+    - source: "Corollary: permutations of F_2^(2m)"
+      lean: "permutation_even_nl_le"
+      module: "Solution"
+      status: "proved"
+
+acknowledgements: >-
+  Credit for the first proofs of nl_bal(8) = 116 goes to Yuan, Hu, Zhang, Zhang and Wu and to Lou,
+  Xu and Wang, and for nl_bal(10) = 492 to Xu and Wang.
