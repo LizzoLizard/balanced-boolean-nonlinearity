@@ -7,6 +7,8 @@
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.24546078-blue)](https://doi.org/10.5281/zenodo.24546078)
 [![Paper: CC BY 4.0](https://img.shields.io/badge/paper-CC%20BY%204.0-lightgrey)](paper/LICENSE)
 
+Project page: https://lizzolizard.github.io/balanced-boolean-nonlinearity/
+
 This repository contains a short paper ([PDF](paper/main.pdf)) and a complete Lean 4 proof of the following theorem.
 
 > **Theorem.** Let m ≥ 4 and let f be a balanced Boolean function in n = 2m variables. Then
